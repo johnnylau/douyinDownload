@@ -126,16 +126,17 @@ def pic_download(urlarg):
 
         pic_title = str(js['item_list'][0]['desc'])
         nickname = str(js['item_list'][0]['author']['nickname'])
+        dir_path = os.path.join(os.getcwd(), 'pic', nickname)
+
         # 检测下载目录是否存在
-        if not os.path.exists('Download\\' + 'pic\\' + nickname):
-            os.makedirs('Download\\' + 'pic\\' + nickname)
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
         for i in range(len(js['item_list'][0]['images'])):
             # 尝试下载图片
             try:
                 pic_url = str(js['item_list'][0]['images'][i]['url_list'][0])
                 picture = requests.get(url=pic_url, headers=headers)
-                p_url = 'Download\\' + 'pic\\' + nickname + '\\' + creat_time + \
-                    pic_title + '_' + str(i) + '.jpeg'  # + now2ticks()
+                p_url = os.path.join(dir_path, f'{creat_time}_{pic_title}_{i}.jpg')
                 with open(p_url, 'wb') as file:
                     file.write(picture.content)
                     print('[  提示  ]:' + p_url + '下载完毕\r')
