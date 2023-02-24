@@ -145,6 +145,8 @@ def pic_download(urlarg):
                 pic_url = str(js['aweme_detail']['images'][i]['url_list'][0])
                 picture = requests.get(url=pic_url, headers=headers)
                 p_url = os.path.join(dir_path, f'{creat_time}_{pic_title}_{i}.jpg')
+                if len(p_url) > 255:
+                    p_url = os.path.join(dir_path, f'{creat_time}_{i}.jpg')
                 with open(p_url, 'wb') as file:
                     file.write(picture.content)
                     print('[  提示  ]:' + p_url + '下载完毕\r')
