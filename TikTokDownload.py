@@ -38,6 +38,17 @@ def Find(string):
         'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', string)
     return url
 
+def generate_ttwid() -> str:
+    """生成请求必带的ttwid
+    param :None
+    return:ttwid
+    """
+    url = 'https://ttwid.bytedance.com/ttwid/union/register/'
+    data = '{"region":"cn","aid":1768,"needFid":false,"service":"www.ixigua.com","migrate_info":{"ticket":"","source":"node"},"cbUrlProtocol":"https","union":true}'
+    response = requests.request("POST", url, data=data)
+    # j = ttwid  k = 1%7CfPx9ZM.....
+    for j, k in response.cookies.items():
+        return k
 
 def main():
     url = ""
@@ -106,8 +117,9 @@ def download(video_url, music_url, video_title, music_title, headers, music, nam
 
 def video_download(url, music, name):
     headers = {
-        'user-agent': 'Mozilla/5.0 (Linux; Android 8.0; Pixel 2 Build/OPD3.170816.012) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Mobile Safari/537.36 Edg/87.0.664.66',
-        'Cookie': 'msToken=%s' % Util.generate_random_str(107)
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36',
+        'referer':'https://www.douyin.com/',
+        'Cookie': f'ttwid=ttwid={generate_ttwid()};'
     }
     r = requests.get(url=Find(url)[0])
     key = re.findall('video/(\d+)?', str(r.url))[0]
@@ -118,8 +130,15 @@ def video_download(url, music, name):
     # 此ies domian暂时不需要xg参数
     # 单作品接口 'aweme_detail'
     # 主页作品 'aweme_list'
-    jx_url = f'https://www.iesdouyin.com/aweme/v1/web/aweme/detail/?aweme_id={key}&aid=1128&version_name=23.5.0&device_platform=android&os_version=2333'
-    js = json.loads(requests.get(url=jx_url, headers=headers).text)
+    jx_url = Util.Urls().POST_DETAIL + Util.XBogus(
+        f'aweme_id={key}&aid=1128&version_name=23.5.0&device_platform=android&os_version=2333').params
+
+    js = Util.json.loads(Util.requests.get(
+        url=jx_url, headers=headers).text)
+
+    if js == '':
+        input('[  提示  ]:获取视频数据失败，请从web端获取新ttwid\r')
+        exit()
 
     try:
         video_url = str(js['aweme_detail']['video']['play_addr']
